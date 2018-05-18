@@ -3,49 +3,38 @@ title: "Repeatability script"
 author: "Erik Waskiewicz"
 date: "01/05/2018"
 output:
-  html_document: default
   pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Import packages
   
-```{r}
+```{r warning=FALSE, message=FALSE, echo=FALSE}
 library('ggplot2')
 library('reshape2')
 library('xtable')
 library('cowplot')
 ```
 
+```{r echo=FALSE}
+working_directory <- '/Users/erik/Projects/gait'
 
-## Settings
-  
-Set parameters to be investigated in the report.  
-
-**study_parameters**: List of the joint parameters to be included.  
-**study_assessors**: List of all of the assessors included in the study.  
-**study_sides**: Each measurment is taken for both the left and right side, change to just look at one side.  
-  
-> Comment out any parameters that aren't to be included in the report, add or remove any assessors, sessions or participants. Make sure not to leave a trailing comma at the end of the list.  
-
-```{r}
 study_sides = list(
-  c('Left', 'Export Left 20-03-18.txt'),
-  c('Right', 'Export Right 20-03-18.txt')
+  c('Left', 'raw_data/Export Left 20-03-18.txt'),
+  c('Right', 'raw_data/Export Right 20-03-18.txt')
 )
 
 study_participants = list(
-  c('Participant 1', 'Dube_Philiani_1982-09-24_Repeatability'),
-  c('P2', 'participant2')
+  c('Participant 1', 'Dube_Philiani_1982-09-24_Repeatability')
 )
 
 study_assessors = list(
-  c('Jav Haider', 'JAV'),
-  c('Jon Hoskins', 'JON'),
-  c('Lewis Crown', 'LEWIS')
+  c('Jav', 'JAV'),
+  c('Jon', 'JON'),
+  c('Lewis', 'LEWIS')
 )
 
 study_sessions = list(
@@ -56,28 +45,23 @@ study_sessions = list(
 )
 
 study_parameters = list(
-  c('Pelvic tilt', 'Pelvic Angles', 'X'),
-  c('Pelvic obliquity', 'Pelvic Angles', 'Y'),
-  c('Pelvic rotation', 'Pelvic Angles', 'Z'),
-  c('Hip flexion', 'Hip Angles', 'X'),
-  c('Hip adduction', 'Hip Angles', 'Y'),
-  c('Hip rotation', 'Hip Angles', 'Z'),
-  c('Knee flexion', 'Knee Angles', 'X'),
-  c('Knee adduction', 'Knee Angles', 'Y'),
-  c('Knee rotation', 'Knee Angles', 'Z'),
-  c('Ankle dorsiflexion', 'Ankle Angles', 'X'),
-  c('Ankle inversion', 'Ankle Angles', 'Y'),
-  c('Foot pitch', 'Foot Pitch Angles', 'X'),
-  c('Foot progression', 'Foot Pitch Angles', 'Z')
+  #c('Pelvic tilt', 'Pelvic Angles', 'X', 0, 17, 5),
+  #c('Pelvic obliquity', 'Pelvic Angles', 'Y', -6, 6, 2),
+  #c('Pelvic rotation', 'Pelvic Angles', 'Z', -10, 12, 5),
+  #c('Hip flexion', 'Hip Angles', 'X', -20, 40, 10),
+  #c('Hip adduction', 'Hip Angles', 'Y', -15, 10, 5),
+  #c('Hip rotation', 'Hip Angles', 'Z', -30, 10, 10),
+  #c('Knee flexion', 'Knee Angles', 'X', -15, 70, 10),
+  #c('Knee adduction', 'Knee Angles', 'Y', -15, 10, 5),
+  #c('Knee rotation', 'Knee Angles', 'Z', -22, 12, 10),
+  #c('Ankle dorsiflexion', 'Ankle Angles', 'X', -25, 15, 5),
+  #c('Ankle inversion', 'Ankle Angles', 'Y', 0, 30, 5),
+  c('Foot pitch', 'Foot Pitch Angles', 'X', -80, 30, 20),
+  c('Foot progression', 'Foot Pitch Angles', 'Z', -25, 25, 10)
 )
 ```
 
-
-## Load data  
-  
-Load in raw data for left and right side.  
-Load in headers and data seperately to speed up and to avoid numbers being defined as factors.  
-```{r}
+```{r echo=FALSE}
 # write functions
 load_headers <- function(x) {
   df <- read.delim(file = x, header = FALSE, nrows = 5)
@@ -90,35 +74,9 @@ load_data <- function(x) {
 }
 ```
 
-# Apply functions
-```{r}
-list_input_data <- vector('list', length(study_sides))
-list_input_head <- vector('list', length(study_sides))
-i=1
-for (data in study_sides) {
-  # load headers
-  temp_headers <- load_headers(data[2])
-  assign(paste('raw_headers', tolower(data[1]), sep = '_'), temp_headers)
-  # load data
-  temp_data <- load_data(data[2])
-  assign(paste('raw_data', tolower(data[1]), sep = '_'), temp_data)
-  # add to list - NOT SURE ITS WORTH ASSIGNING NAMES???
-  list_input_head[[i]] <- assign(paste('raw_data', tolower(data[1]), sep = '_'), temp_headers)
-  list_input_data[[i]] <- assign(paste('raw_data', tolower(data[1]), sep = '_'), temp_data)
-  i=i+1
-}
-# clean up
-rm(temp_headers, temp_data, data, i)
-```
-
-
-## Extract metadata from filepaths
-  
-Write function to extract metadata:  
-```{r}
+```{r echo=FALSE}
 parse_participant <- function(x) {
   field = x[6]
-  #p = gsub(y[2], y[1], field)
   return(field)
 }
 
@@ -152,10 +110,8 @@ parse_trial <- function(x) {
   return(field_split)
 }
 ```
-  
-# TIDY UP FUNCTION AND CONCATENATE, USE LISTS
-Apply functions:  
-```{r}
+
+```{r echo=FALSE}
 sort_data <- function(dat, head){
   
   paths <- strsplit(toString(head$X1), ',')
@@ -183,40 +139,30 @@ sort_data <- function(dat, head){
     temp_df$Session.number <- sapply(temp_df$Session.number, function(x) gsub(session[2], session[1], x))
   }
   
-  sorted_data_right <- cbind(temp_df, dat)
-  remove_df <- subset(sorted_data_right, (Joint=='Right Ankle Angles' & Plane=='Z') | (Joint=='Right Foot Pitch Angles' & Plane=='Y') | Joint=='Right Ankle Angles_CGM' | Joint=='Right Foot Progression' | Trial=='Static')
-  sorted_data_right <- sorted_data_right[setdiff(rownames(sorted_data_right), rownames(remove_df)),]
+  sorted_data <- cbind(temp_df, dat)
+  remove_df <- subset(sorted_data, (Trial=='Static' | Joint=='Right Ankle Angles' & Plane=='Z') | (Joint=='Right Foot Pitch Angles' & Plane=='Y') | Joint=='Right Ankle Angles_CGM' | Joint=='Right Foot Progression' | Joint=='Left Ankle Angles' & Plane=='Z' | (Joint=='Left Foot Pitch Angles' & Plane=='Y') | Joint=='Left Ankle Angles_CGM' | Joint=='Left Foot Progression')
+  sorted_data <- sorted_data[setdiff(rownames(sorted_data), rownames(remove_df)),]
   
-  rm(paths, paths_split, temp_df, head, dat, remove_df, assessor, session, participant)
-  
-  return(sorted_data_right)
+  return(sorted_data)
 }
-
-sorted_data_left <- sort_data(raw_data_left, raw_headers_left)
-sorted_data_right <- sort_data(raw_data_right, raw_headers_right)
 ```
-  
-## Make functions for subsetting data
-  
-# SUBSET BY PARTICIPANT AND SIDE
-Subset data by joint and axis:  
-```{r}
-split_by_joint <- function(x,y) {
-  df <- subset(sorted_data_right, Joint == x & Plane == y)
+
+```{r echo=FALSE}
+split_by_joint <- function(dat, x,y) {
+  df <- subset(dat, Joint == x & Plane == y)
   df <- df[setdiff(colnames(df), c('Participant', 'Session.date', 'Trial', 'Joint', 'Plane'))]
   df <- melt(df, id.vars = c('Session.assessor', 'Session.number', 'unique_id'))
 }
 ```
-  
-Plot graph:  
-```{r}
+
+```{r echo=FALSE}
 # inputs - data split by day, y label, day label, (y axis limits?)
-plot_graph_all <- function(x, t, l) {
+plot_graph_all <- function(x, t, l, ylower, yupper, increments) {
   plot <- ggplot(x, aes(x=as.numeric(variable)-1, y=value, group=unique_id, colour=Session.assessor)) +
   geom_line() +
   labs(title=t, x='Gait cycle (%)', y=paste(l, ' (degrees)')) +
   geom_hline(yintercept = 0) +
-  scale_y_continuous(expand = c(0, 0), limits = c(-30, 30), breaks = c(seq(-30, 30, 10))) + 
+  scale_y_continuous(expand = c(0, 0), limits = c(as.numeric(ylower), as.numeric(yupper)), breaks = c(seq(-360, 360, as.numeric(increments)))) + 
   scale_x_continuous(expand = c(0, 0), limits = c(0, 101), breaks = c(seq(0, 100, 20))) + 
   theme(panel.grid.major = element_blank(),
       panel.grid.minor = element_blank(),
@@ -226,16 +172,26 @@ plot_graph_all <- function(x, t, l) {
       )
 }
 ```
+
+```{r echo=FALSE}
+combine_plots <- function(x, leg) {
+  plot_left <- plot_grid(plotlist = x[[1]], ncol = 1)
+  plot_right <- plot_grid(plotlist = x[[2]], ncol = 1)
+  plot_combined <- plot_grid(plot_left, plot_right, ncol = 2)
+  plot <- plot_grid(plot_combined, leg, ncol = 1, rel_heights = c(20, 1))
+  # save plot
+  #save_plot(name, plot, base_height = 15, base_width = 12)
+}
+```
   
-Plot graph of means:
-```{r}
+```{r echo=FALSE}
 # inputs - mean data for all sessions and assessors, y label, (title + y axid limits?)
-plot_graph_means <- function(x,l) {
-  plot <- ggplot(x, aes(x=as.numeric(variable)-1, y=value, group=unique_id, colour=Session.assessor, linetype=Session.number)) +
+plot_graph_means <- function(x,l, ylower, yupper, increments) {
+  plot <- ggplot(x, aes(x=as.numeric(variable)-1, y=value, group=unique_id, colour=assessor, linetype=no)) +
     geom_line() +
     labs(x='Gait cycle (%)', y=paste(l, ' (degrees)')) +
     geom_hline(yintercept = 0) +
-    scale_y_continuous(expand = c(0, 0), limits = c(-30, 30), breaks = c(seq(-30, 30, 10))) + 
+    scale_y_continuous(expand = c(0, 0), limits = c(as.numeric(ylower), as.numeric(yupper)), breaks = c(seq(-360, 360, as.numeric(increments)))) + 
     scale_x_continuous(expand = c(0, 0), limits = c(0, 101), breaks = c(seq(0, 100, 20))) + 
     theme(panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -245,60 +201,251 @@ plot_graph_means <- function(x,l) {
         )
 }
 ```
-  
-## Apply functions to subset data and make graphs
-  
-```{r}
-for (i in list(c('Ankle dorsiflexion', 'Right Ankle Angles', 'X'), c('Ankle inversion', 'Right Ankle Angles', 'Y'))){
-  # subset total data by joint and axis
-  temp_df <- split_by_joint(i[2], i[3])
-  assign(paste('df', i[1], sep = '.'), temp_df)
-  # Loop through sessions
-  for (s in study_sessions) {
-    # subset data
-    temp_subset <- subset(temp_df, Session.number == s[1])
-    # plot graph
-    temp_plot <- plot_graph_all(temp_subset, s[1], i[1])
-    assign(paste('plot', i[1], s[1], sep = '.'), temp_plot)
-  }
-  # calculate means
-  temp_means <- melt(dcast(temp_df, Session.assessor+Session.number~variable, mean), id.vars = c('Session.assessor', 'Session.number'))
-  temp_means$unique_id <- make.names(paste(temp_means$Session.assessor, temp_means$Session.number, sep='_'))
-  assign(paste('df.means', i[1], sep = '.'), temp_means)
-  # plot means
-  temp_plot <- plot_graph_means(temp_means, i[1])
-  assign(paste('plot.mean', i[1], sep = '.'), temp_plot)
-  # clean up
-  rm(temp_df, temp_subset, temp_plot, temp_means, i, s)
+
+```{r echo=FALSE}
+# inputs - mean data for all sessions and assessors, y label, (title + y axid limits?)
+plot_graph_sem <- function(x) {
+  plot <- ggplot(subset(x, measurement == 'SEM'), aes(x=as.numeric(variable)-1, y=value, group=unique_id, colour=assessor, linetype=no)) +
+    geom_line() +
+    labs(x='Gait cycle (%)', y=paste('SEM (degrees)')) +
+    geom_line(data = subset(x, measurement == 'WSSD'), colour = 'black') +
+    scale_y_continuous(expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0, 0), limits = c(0, 101), breaks = c(seq(0, 100, 20))) + 
+    theme(panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        panel.background = element_blank(),
+        axis.line = element_line(),
+        legend.position = 'bottom'
+        )
 }
 ```
 
-## Display graphs 
-  
-```{r}
-leg <- get_legend(`plot.Ankle dorsiflexion.Session 1`)
+```{r echo=FALSE}
+plot_kinematics <- function(x) {
+  df <- subset(x, variable == 'mean')
+  trial_mean <- mean(df$value)
+  df$dev <- lapply(df$value, function(x){x - trial_mean})
+  temp_plot <- ggplot(df, aes(x=unique_id, y=value, group=Session.assessor, colour=Session.number)) + 
+    geom_point() +
+    geom_hline(yintercept = trial_mean, colour = '#999999') +
+    theme(axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          legend.position = 'bottom') +
+    facet_grid(. ~ Session.assessor, scales = 'free')
+}
+```
 
-plots <- plot_grid(
-  `plot.Ankle dorsiflexion.Session 1` + theme(legend.position = 'none'), 
-  `plot.Ankle dorsiflexion.Session 2` + theme(legend.position = 'none'), 
-  `plot.Ankle dorsiflexion.Session 3` + theme(legend.position = 'none'), 
-  `plot.Ankle dorsiflexion.Session 4` + theme(legend.position = 'none'), 
-  ncol = 2
+```{r echo=FALSE}
+# calculate means per session+assessor - mean at each percentile of all the trials each assessor has done in a session
+agg_means <- function() {
+  temp_means <- dcast(temp_df, Session.assessor+Session.number~variable, mean)
+  temp_means$measurement <- rep('Trial mean', nrow(temp_means))
+  temp_means <- melt(temp_means, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+  
+# individual sem - for each participant - 
+agg_ind_sem <- function() {
+  temp_ind_sem <- data.frame(
+    'Session.number' = rep('All', length(study_assessors)),
+    'measurement' = rep('Individual_SEM', length(study_assessors))
+    )
+  temp_ind_sem <- cbind(temp_ind_sem, dcast(temp_means, Session.assessor ~ variable, sd))
+  temp_ind_sem <- melt(temp_ind_sem, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+  
+# sem
+agg_sem <- function() {
+  temp_sem <- data.frame(
+    'Session.number' = temp_ind_sem$Session.number,
+    'Session.assessor' = temp_ind_sem$Session.assessor,
+    'measurement' = rep('SEM', nrow(temp_ind_sem)),
+    'variable' = temp_ind_sem$variable,
+    'value' = sapply(temp_ind_sem$value, function(x) {sqrt(sum(x^2) / length(study_participants))})
   )
-
-plot_grid(plots, leg, ncol = 1, rel_heights = c(10,1))
-
-```
-
-## How to make a nice table in R markdown:  
+}
   
-```{r, results='asis'}
-#tab <- xtable(`df.means.Ankle dorsiflexion`)
-#print(head(tab), type = 'html')
+# wssd
+agg_wssd <- function() {
+  temp_wssd <- data.frame(
+    'Session.number' = rep('All', length(unique(temp_means$variable))),
+    'Session.assessor' = rep('All', length(unique(temp_means$variable))),
+    'measurement' = rep('WSSD', length(unique(temp_means$variable)))
+    )
+  temp_wssd <- cbind(temp_wssd, aggregate(value~variable, data = temp_means, FUN = sd))
+}
+  
+# wass
+agg_wass <- function() {
+  temp_wass <- data.frame(
+    'Session.number' = rep('All', length(unique(temp_means$variable))),
+    'Session.assessor' = rep('All', length(unique(temp_means$variable))),
+    'measurement' = rep('WASS', length(unique(temp_means$variable)))
+    )
+  temp_wass <- cbind(temp_wass, aggregate(value~variable, data = temp_ind_sem, FUN = function(x) {sqrt(sum(x^2) / length(study_participants))}))
+}
+
+agg_combine <- function() {
+    names(temp_means) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_ind_sem) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_sem) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_wssd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_wass) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    df <- rbind(temp_means, temp_ind_sem, temp_sem, temp_wssd, temp_wass)
+    df$unique_id <- make.names(paste(df$assessor, df$no, df$measurement, sep='_'))
+    
+    return(df)
+}
 ```
 
 
 
+
+
+
+
+```{r warning=FALSE, echo=FALSE}
+setwd(working_directory)
+dir.create('results')
+```
+
+# Parameters
+```{r echo=FALSE, results='asis'}
+for (parameter in study_parameters) {
+  cat('  \n*', parameter[1], '  \n')
+}
+```
+\newpage
+
+```{r echo=FALSE}
+input_list <- vector('list', length(study_sides))
+i=1
+for (data in study_sides) {
+  # load headers and data seperately
+  temp_headers <- load_headers(data[2])
+  temp_data <- load_data(data[2])
+  temp_data$mean <- rowMeans(temp_data)
+  # combine and sort data
+  temp_sorted <- sort_data(temp_data, temp_headers)
+  input_list[[i]] <- temp_sorted
+  i=i+1
+}
+# concatenate dataframes in list
+sorted_data <- do.call('rbind', input_list)
+write.csv(sorted_data, 'results/all_data_sorted.csv')
+# clean up
+rm(temp_headers, temp_data, temp_sorted, data, input_list, i)
+```
+
+
+```{r results='asis', message=FALSE, fig.width=9, fig.height=12, echo=FALSE}
+for (parameter in study_parameters){
+  # format pdf
+  cat('\n\\pagebreak\n')
+  cat('  \n##', parameter[1], '  \n###All trials', '  \n')
+  # subset by side
+  temp_side_list <- vector('list', length(study_sides))
+  i=1
+  for (side in study_sides){
+    temp_parameter <- paste(side[1], parameter[2], sep = ' ')
+    # subset total data by joint and axis
+    temp_df <- split_by_joint(sorted_data, temp_parameter, parameter[3])
+    write.csv(temp_df, paste('results/', parameter[1], '_df_all.csv', sep = ''))
+    # Loop through sessions
+    temp_session_list <- vector('list', length(study_sessions))
+    j=1
+    for (study in study_sessions) {
+      # subset data
+      temp_subset <- subset(temp_df, Session.number == study[1])
+      # plot graph
+      temp_plot <- plot_graph_all(temp_subset, paste(study[1], side[1], sep = ' - '), parameter[1], parameter[4], parameter[5], parameter[6])
+      temp_leg <- get_legend(temp_plot)
+      temp_plot <- temp_plot + theme(legend.position = 'none')
+      temp_session_list[[j]] <- temp_plot
+      # clean up
+      rm(temp_subset, temp_plot)
+      j=j+1
+    }
+    temp_side_list[[i]] <- temp_session_list
+    rm(study, j)
+    i=i+1
+  }
+  rm(side, i)
+  # combine left and right plots, display plot and save
+  temp_plot <- combine_plots(temp_side_list, temp_leg)
+  plot(temp_plot)
+  temp_name <- paste('results/', parameter[1], '_plot_all.png', sep = '')
+  save_plot(temp_name, temp_plot, base_height = 15, base_width = 12)
+  # clean up
+  rm(temp_df, temp_plot, temp_session_list, temp_side_list, temp_parameter, temp_leg, temp_name)
+
+################
+  
+  # format pdf
+  cat('\n\\pagebreak\n')
+  cat('  \n##', parameter[1], '  \n###Aggregated', '  \n')
+  # subset by side
+  temp_side_list <- vector('list', length(study_sides))
+  i=1
+  for (side in study_sides){
+    # subset total data by joint and axis
+    temp_parameter <- paste(side[1], parameter[2], sep = ' ')
+    temp_df <- split_by_joint(sorted_data, temp_parameter, parameter[3])
+    # calculate means, sem, wssd, wass
+    temp_means <- agg_means()
+    temp_ind_sem <- agg_ind_sem()
+    temp_sem <- agg_sem()
+    temp_wssd <- agg_wssd()
+    temp_wass <- agg_wass()
+    # combine
+    temp_output <- agg_combine()
+    # plot means, sem and kinematics
+    temp_plot_means <- plot_graph_means(subset(temp_output, measurement == 'Trial mean'), parameter[1], parameter[4], parameter[5], parameter[6])
+    temp_plot_sem <- plot_graph_sem(temp_output)
+    temp_plot_kinematics <- plot_kinematics(temp_df)
+    # combine plots
+    temp_side_list[[i]] <- plot_grid(temp_plot_means, temp_plot_sem, temp_plot_kinematics, ncol = 1)
+    # unmelt and save df
+    temp_output <- dcast(temp_output, assessor+no+measurement~variable, value.var = 'value')
+    write.csv(temp_output, paste('results/', parameter[1], '_df_processed.csv', sep = ''))
+    # cleanup 
+    rm(temp_df, temp_ind_sem, temp_means, temp_sem, temp_wass, temp_wssd, temp_parameter, temp_plot_means, temp_plot_sem, temp_plot_kinematics, side)
+    i=i+1
+  }
+  # combine left and right plots, display graph and save
+  temp_plot <- plot_grid(plotlist = temp_side_list, ncol = 2)
+  plot(temp_plot)
+  temp_name <- paste('results/', parameter[1], '_plot_aggregated.png', sep = '')
+  save_plot(temp_name, temp_plot, base_height = 15, base_width = 12)
+  # clean up
+  #rm(temp_output, parameter, temp_plot, temp_side_list, temp_name, i)
+  
+  ###############
+  
+  # create gait reliability profile df
+  df <- data.frame('session' = character(), 
+                   'assessor' = character()
+                   )
+  # loop through sides
+    # extract- inter trial variability - create means and sd of assessor from (temp_output - session - assessor - mean column)
+    # WASS for each assessor
+    # overall WASS
+    # BASS
+    # Procedural
+    # total 
+    # total procedural
+  # plot graph per assessot
+  # plot combined graph
+  # print table?
+  
+}
+```
+
+## Gait reliability profile
+  
+```{r, echo=FALSE, results='asis'}
+tab <- xtable(`sorted_data`)
+print(head(tab), type = 'latex')
+```
 
 
 
