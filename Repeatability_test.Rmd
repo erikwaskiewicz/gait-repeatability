@@ -45,17 +45,16 @@ study_sessions = list(
 )
 
 study_parameters = list(
-  #c('Pelvic tilt', 'Pelvic Angles', 'X', 0, 17, 5),
-  #c('Pelvic obliquity', 'Pelvic Angles', 'Y', -6, 6, 2),
-  #c('Pelvic rotation', 'Pelvic Angles', 'Z', -10, 12, 5),
-  #c('Hip flexion', 'Hip Angles', 'X', -20, 40, 10),
-  #c('Hip adduction', 'Hip Angles', 'Y', -15, 10, 5),
-  #c('Hip rotation', 'Hip Angles', 'Z', -30, 10, 10),
-  #c('Knee flexion', 'Knee Angles', 'X', -15, 70, 10),
-  #c('Knee adduction', 'Knee Angles', 'Y', -15, 10, 5),
-  #c('Knee rotation', 'Knee Angles', 'Z', -22, 12, 10),
-  #c('Ankle dorsiflexion', 'Ankle Angles', 'X', -25, 15, 5),
-  #c('Ankle inversion', 'Ankle Angles', 'Y', 0, 30, 5),
+  c('Pelvic obliquity', 'Pelvic Angles', 'Y', -6, 6, 2),
+  c('Pelvic rotation', 'Pelvic Angles', 'Z', -10, 12, 5),
+  c('Hip flexion', 'Hip Angles', 'X', -20, 40, 10),
+  c('Hip adduction', 'Hip Angles', 'Y', -15, 10, 5),
+  c('Hip rotation', 'Hip Angles', 'Z', -30, 10, 10),
+  c('Knee flexion', 'Knee Angles', 'X', -15, 70, 10),
+  c('Knee adduction', 'Knee Angles', 'Y', -15, 10, 5),
+  c('Knee rotation', 'Knee Angles', 'Z', -22, 12, 10),
+  c('Ankle dorsiflexion', 'Ankle Angles', 'X', -25, 15, 5),
+  c('Ankle inversion', 'Ankle Angles', 'Y', 0, 30, 5),
   c('Foot pitch', 'Foot Pitch Angles', 'X', -80, 30, 20),
   c('Foot progression', 'Foot Pitch Angles', 'Z', -25, 25, 10)
 )
@@ -242,7 +241,76 @@ agg_means <- function() {
   temp_means$measurement <- rep('Trial mean', nrow(temp_means))
   temp_means <- melt(temp_means, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
 }
+# aggregate sd
+agg_sd <- function() {
+  temp_sd <- dcast(temp_df, Session.assessor+Session.number~variable, sd)
+  temp_sd$measurement <- rep('Trial SD', nrow(temp_sd))
+  temp_sd <- melt(temp_sd, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
   
+# means per participant - 
+agg_assessor_means <- function() {
+  temp_assessor_means <- data.frame(
+    'Session.number' = rep('All', length(study_assessors)),
+    'measurement' = rep('Trial mean', length(study_assessors))
+    )
+  temp_assessor_means <- cbind(temp_assessor_means, dcast(temp_means, Session.assessor ~ variable, mean))
+  temp_assessor_means <- melt(temp_assessor_means, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+
+# sd per participant - within assessor SD
+agg_assessor_sd <- function() {
+  temp_assessor_sd <- data.frame(
+    'Session.number' = rep('All', length(study_assessors)),
+    'measurement' = rep('Within assessor SD', length(study_assessors))
+    )
+  temp_assessor_sd <- cbind(temp_assessor_sd, dcast(temp_means, Session.assessor ~ variable, sd))
+  temp_assessor_sd <- melt(temp_assessor_sd, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+
+# mean within assessor SD
+agg_mean_assessor_sd <- function() {
+  temp_subset <- subset(temp_assessor_sd, variable == 'mean')
+  temp_df <- data.frame(
+    'Session.number' = 'All',
+    'Session.assessor' = 'All',
+    'measurement' = 'Mean within assessor SD'
+    )
+  temp_df <- cbind(temp_df, dcast(temp_subset, Session.number ~ variable, function(x) {sqrt(sum(x^2) / length(x))}))
+  temp_df <- melt(temp_df, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+
+# Between assessor SD
+agg_basd <- function() {
+  temp_basd <- data.frame(
+    'Session.number' = rep('All', length(unique(temp_means$variable))),
+    'Session.assessor' = rep('All', length(unique(temp_means$variable))),
+    'measurement' = rep('Between assessor SD', length(unique(temp_means$variable)))
+    )
+  temp_basd <- cbind(temp_basd, aggregate(value~variable, data = temp_assessor_means, FUN = sd))
+}
+
+# inter-trial rms - per assessor
+agg_intertrial_RMS <- function() {
+  temp_df <- data.frame(
+    'Session.number' = rep('All', length(study_assessors)),
+    'measurement' = rep('Inter-trial RMS', length(study_assessors))
+    )
+  temp_df <- cbind(temp_df, dcast(temp_sd, Session.assessor ~ variable, function(x) {sqrt(sum(x^2) / length(x))}))
+  temp_df <- melt(temp_df, id.vars = c('Session.number', 'Session.assessor', 'measurement'))
+}
+
+# intertrial rms - mean
+agg_mean_intertrial_RMS <- function() {
+  temp_subset <- subset(temp_sd, variable == 'mean')
+  temp_df <- data.frame(
+    'Session.number' = 'All',
+    'Session.assessor' = 'All',
+    'measurement' = 'Inter-trial RMS'
+    )
+  temp_df <- cbind(temp_df, aggregate(value~variable, data = temp_subset, function(x) {sqrt(sum(x^2) / length(x))}))
+}
+
 # individual sem - for each participant - 
 agg_ind_sem <- function() {
   temp_ind_sem <- data.frame(
@@ -286,11 +354,18 @@ agg_wass <- function() {
 
 agg_combine <- function() {
     names(temp_means) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_sd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_assessor_means) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_assessor_sd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_mean_assessor_sd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_intertrial_RMS) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_mean_intertrial_RMS) <- c('no', 'assessor', 'measurement', 'variable', 'value')
+    names(temp_basd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
     names(temp_ind_sem) <- c('no', 'assessor', 'measurement', 'variable', 'value')
     names(temp_sem) <- c('no', 'assessor', 'measurement', 'variable', 'value')
     names(temp_wssd) <- c('no', 'assessor', 'measurement', 'variable', 'value')
     names(temp_wass) <- c('no', 'assessor', 'measurement', 'variable', 'value')
-    df <- rbind(temp_means, temp_ind_sem, temp_sem, temp_wssd, temp_wass)
+    df <- rbind(temp_means, temp_sd, temp_assessor_means, temp_assessor_sd, temp_mean_assessor_sd, temp_intertrial_RMS, temp_mean_intertrial_RMS, temp_basd, temp_ind_sem, temp_sem, temp_wssd, temp_wass)
     df$unique_id <- make.names(paste(df$assessor, df$no, df$measurement, sep='_'))
     
     return(df)
@@ -336,7 +411,20 @@ write.csv(sorted_data, 'results/all_data_sorted.csv')
 rm(temp_headers, temp_data, temp_sorted, data, input_list, i)
 ```
 
+Create empty df for aggregated gait reliability profile data
+```{r echo=FALSE}
+  # create gait reliability profile df
+  grp_df <- data.frame('Parameter' = character(),
+                   'Inter-trial' = character(), 
+                   'WASS' = character(),
+                   'BASS' = character(),
+                   'Procedural' = character(),
+                   'Total' = character(),
+                   'Total-procedural' = character()
+                   )
+```
 
+# FIX - Only saving roght side!
 ```{r results='asis', message=FALSE, fig.width=9, fig.height=12, echo=FALSE}
 for (parameter in study_parameters){
   # format pdf
@@ -349,7 +437,8 @@ for (parameter in study_parameters){
     temp_parameter <- paste(side[1], parameter[2], sep = ' ')
     # subset total data by joint and axis
     temp_df <- split_by_joint(sorted_data, temp_parameter, parameter[3])
-    write.csv(temp_df, paste('results/', parameter[1], '_df_all.csv', sep = ''))
+    temp_output <- dcast(temp_df, Session.assessor+Session.number+unique_id~variable, value.var = 'value')
+    write.csv(temp_output, paste('results/', side[1], '_', parameter[1], '_df_all.csv', sep = ''))
     # Loop through sessions
     temp_session_list <- vector('list', length(study_sessions))
     j=1
@@ -392,6 +481,13 @@ for (parameter in study_parameters){
     temp_df <- split_by_joint(sorted_data, temp_parameter, parameter[3])
     # calculate means, sem, wssd, wass
     temp_means <- agg_means()
+    temp_sd <- agg_sd()
+    temp_assessor_means <- agg_assessor_means()
+    temp_assessor_sd <- agg_assessor_sd()
+    temp_mean_assessor_sd <- agg_mean_assessor_sd()
+    temp_intertrial_RMS <- agg_intertrial_RMS()
+    temp_mean_intertrial_RMS <- agg_mean_intertrial_RMS()
+    temp_basd <- agg_basd()
     temp_ind_sem <- agg_ind_sem()
     temp_sem <- agg_sem()
     temp_wssd <- agg_wssd()
@@ -404,11 +500,41 @@ for (parameter in study_parameters){
     temp_plot_kinematics <- plot_kinematics(temp_df)
     # combine plots
     temp_side_list[[i]] <- plot_grid(temp_plot_means, temp_plot_sem, temp_plot_kinematics, ncol = 1)
+    
+    #####################
+    
+    temp_grp <- data.frame(
+      'Parameter' = paste(side[1], parameter[1], sep = ' '),
+      'Inter-trial' = subset(temp_output, assessor == 'All' & no == 'All' & variable == 'mean' & measurement == 'Inter-trial RMS')$value,
+      'WASS' = subset(temp_output, assessor == 'All' & no == 'All' & variable == 'mean' & measurement == 'Mean within assessor SD')$value,
+      'BASS' = subset(temp_output, assessor == 'All' & no == 'All' & variable == 'mean' & measurement == 'Between assessor SD')$value
+    )
+    
+    temp_list <- vector('list', length(study_assessors))
+    temp_names <- vector('list', length(study_assessors))
+    j=1
+    for (a in study_assessors){
+      temp_value <- subset(temp_output, assessor == a[1] & no == 'All' & variable == 'mean' & measurement == 'Within assessor SD')$value
+      temp_list[[j]] <- c(temp_value)
+      temp_names[[j]] <- paste('WASS', a[1], sep = '-')
+      j=j+1
+    }
+    df <- data.frame(temp_list)
+    names(df) <- temp_names
+    # ADD TO MAIN DF
+    
+    temp_grp$Procedural = sqrt(sum(temp_grp$WASS^2)+(temp_grp$BASS^2))
+    temp_grp$Total = sqrt(sum(temp_grp$WASS^2) + (temp_grp$BASS^2) + (temp_grp$Inter.trial^2))
+    temp_grp$`Total-procedural` = sum(temp_grp$Total - temp_grp$Procedural)
+    grp_df <- rbind(grp_df, temp_grp)
+    
+    ######################
+    
     # unmelt and save df
-    temp_output <- dcast(temp_output, assessor+no+measurement~variable, value.var = 'value')
-    write.csv(temp_output, paste('results/', parameter[1], '_df_processed.csv', sep = ''))
+    #temp_output <- dcast(temp_output, assessor+no+measurement~variable, value.var = 'value')
+    #write.csv(temp_output, paste('results/', side[1], '_', parameter[1], '_df_processed.csv', sep = ''))
     # cleanup 
-    rm(temp_df, temp_ind_sem, temp_means, temp_sem, temp_wass, temp_wssd, temp_parameter, temp_plot_means, temp_plot_sem, temp_plot_kinematics, side)
+    rm(temp_df, temp_ind_sem, temp_means, temp_sem, temp_wass, temp_wssd, temp_assessor_means, temp_assessor_sd, temp_basd, temp_intertrial_RMS, temp_mean_intertrial_RMS, temp_sd, temp_mean_assessor_sd, temp_parameter, temp_plot_means, temp_plot_sem, temp_plot_kinematics, temp_grp, side)
     i=i+1
   }
   # combine left and right plots, display graph and save
@@ -417,34 +543,28 @@ for (parameter in study_parameters){
   temp_name <- paste('results/', parameter[1], '_plot_aggregated.png', sep = '')
   save_plot(temp_name, temp_plot, base_height = 15, base_width = 12)
   # clean up
-  #rm(temp_output, parameter, temp_plot, temp_side_list, temp_name, i)
+  rm(parameter, temp_plot, temp_side_list, temp_name, i)
   
   ###############
-  
-  # create gait reliability profile df
-  df <- data.frame('session' = character(), 
-                   'assessor' = character()
-                   )
-  # loop through sides
-    # extract- inter trial variability - create means and sd of assessor from (temp_output - session - assessor - mean column)
-    # WASS for each assessor
-    # overall WASS
-    # BASS
-    # Procedural
-    # total 
-    # total procedural
-  # plot graph per assessot
-  # plot combined graph
-  # print table?
   
 }
 ```
 
 ## Gait reliability profile
   
-```{r, echo=FALSE, results='asis'}
-tab <- xtable(`sorted_data`)
-print(head(tab), type = 'latex')
+```{r results='asis', message=FALSE, fig.width=9, fig.height=5, echo=FALSE}
+grp_long <- melt(grp_df, id.vars = c('Parameter'))
+
+g <- ggplot(subset(grp_long, variable == 'Total'), aes(x=Parameter, y=value)) + 
+  geom_bar(stat='identity', position = 'identity', fill='orange') + 
+  geom_bar(data = subset(grp_long, variable == 'Procedural'), aes(x=Parameter, y=value), stat='identity', position = 'identity', fill='blue') + 
+  geom_point(data = subset(grp_long, variable == 'BASS'), aes(x=Parameter, y=value), size=8, shape=95) + 
+  geom_point(data = subset(grp_long, variable == 'WASS'), aes(x=Parameter, y=value), size=8, shape=95, colour='red') +
+  theme(axis.text.x = element_text(angle = 45, vjust=0.4, size = 12))
+g
+
+tab <- xtable(grp_df)
+print(tab, type = 'latex')
 ```
 
 
