@@ -6,7 +6,7 @@ R script for processing, analysing and reporting data from a gait analysis repro
 ## Installation
 The program consists of three scripts and is designed to be run within the project folder. Before using the program for the first time, you will need to download the three scripts into a master directory and change some initial settings. From this master directory, two of the scripts need to be copy and pasted into each project folder and run to produce the report. The third script can remain in the master directory.  
 
-### Files:
+### Files
 ```repeatability_script.Rmd``` - An R markdown file to perform the main analysis.   
 This file loads in functions and settings from the repeatability_functions.R and repeatability_settings.R files, sorts the raw data, loops through each test parameter and outputs a PDF report. This file should be copy and pasted into the project folder, along with the repeatability_settings.R file, and run to produce the output PDF report.  
 
@@ -17,10 +17,18 @@ The filepath to the repeatability_function.R file should be editted on initial i
 This file should be saved in the master directory and not copy and pasted into the project folder. The filepath within the repeatability_settings.R file pointing to this file should be edited during the initial setup.  
 
 
-### Installation steps:  
+### Installation steps  
 1. Save all files from this repository into a new master directory
 2. Change the filepath at the end of the repeatability_settings.R file so that it directs to the repeatability_function.R file in your master directory and save  
 These files can now be kept as they are as a master copy, follow the instuctions below for each project
+
+### Dependencies
+* RStudio (or pandoc installed, for knitting the Rmd file)
+* R packages:
+  - ggplot2
+  - reshape2
+  - cowplot
+  - xtable
 
 ---
 
