@@ -24,11 +24,13 @@ These files can now be kept as they are as a master copy, follow the instuctions
 
 ### Dependencies
 * RStudio (or pandoc installed, for knitting the Rmd file)
+* R version ??????
 * R packages:
-  - ggplot2
-  - reshape2
-  - cowplot
-  - xtable
+  - ggplot2 (v3.4.0)
+  - reshape2 (v1.4.3)
+  - cowplot (v3.4.3)
+  - xtable (v1.8.2)
+* latex
 
 ---
 
