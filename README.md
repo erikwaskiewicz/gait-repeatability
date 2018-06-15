@@ -7,13 +7,13 @@ R script for processing, analysing and reporting data from a gait analysis repro
 The script is designed to be run within the project folder. Before using the script for the first time, download the scripts into a master directory from which they can be copy and pasted into each project folder.  
 
 ### Files:
-**repeatability_script.Rmd**  
+```**repeatability_script.Rmd**```  
 An R markdown file to perform the main analysis. This file loads in functions and settings from the repeatability_functions.R and repeatability_settings.R files, sorts the raw data, loops through each test parameter and outputs a PDF report.  
 
-**repeatability_function.R** - An R file containing all of the function for repeatability_script.Rmd to work.   
+```**repeatability_function.R**``` - An R file containing all of the functions for repeatability_script.Rmd to work.   
 This file should be saved in the master directory and not copy and pasted into the project folder. The filepath within the repeatability_settings.R file pointing to this file should be edited during the initial setup.  
 
-**repeatability_settings.R**  
+```repeatability_settings.R```  
 An R file where all of the study variables can be entered before running the main script.  
 
 
