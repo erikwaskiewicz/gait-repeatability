@@ -1,5 +1,5 @@
-# Gait reproducibility report generator
-R script for processing, analysing and reporting data from a gait analysis reproducibility study.
+# Gait repeatability report generator
+R script for processing, analysing and reporting data from a gait analysis repeatability study.
 
 ---
 
