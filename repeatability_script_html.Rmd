@@ -21,8 +21,8 @@ setwd('/Users/erik/Projects/gait-repeatability')
 # 3. Edit title, author and date in lines 2-4 above. Do not alter any other code above.
 # 4. Copy raw data into new directory named 'raw_data' within the study directory. Check that filepaths below point to the data.
 study_sides = list(
-  c('Left', 'raw_data/Export Left 20-03-18.txt'),
-  c('Right', 'raw_data/Export Right 20-03-18.txt')
+  c('Left', 'raw_data/<Name of file>'),
+  c('Right', 'raw_data/<Name of file>')
 )
 
 # 5. Change settings below, see readme for details
@@ -30,12 +30,12 @@ study_sides = list(
 
 # ----------------------- Settings -----------------------------------
 study_participants = list(
-  c('Participant 1', 'Dube_Philiani_1982-09-24_Repeatability')
+  c('Participant 1', '<Participant identifier>')
 )
 study_assessors = list(
-  c('A1', 'JAV'),
-  c('A2', 'JON'),
-  c('A3', 'LEWIS')
+  c('A1', '<Assessor identifier>'),
+  c('A2', '<Assessor identifier>'),
+  c('A3', '<Assessor identifier>')
 )
 study_sessions = list(
   c('Session 1', '01'),
