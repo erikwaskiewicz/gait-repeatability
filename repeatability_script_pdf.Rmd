@@ -1,0 +1,90 @@
+---
+title: "Gait Repeatability Study"
+author: "Erik Waskiewicz"
+date: "15/08/2018"
+output: 
+  pdf_document:
+    latex_engine: xelatex
+header-includes: 
+  - \usepackage{rotating}
+  - \usepackage{color}
+  - \usepackage[dvipsnames]{xcolor}
+  - \usepackage{fontspec}
+  - \setmainfont{Arial}
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
+
+## -------------------- INSTRUCTIONS ----------------------------------
+
+# 1. Create directory for study and write file path in brackets below
+setwd('/Users/erik/Projects/gait-repeatability')
+
+# 2. Move this script into new study directory
+# 3. Edit title, author and date in lines 2-4 above. Do not alter any other code above.
+# 4. Copy raw data into new directory named 'raw_data' within the study directory. Check that filepaths below point to the data.
+study_sides = list(
+  c('Left', 'raw_data/Export Left 20-03-18.txt'),
+  c('Right', 'raw_data/Export Right 20-03-18.txt')
+)
+
+# 5. Change settings below, see readme for details
+# 6. Once finished, save file and click knit
+
+# ----------------------- Settings -----------------------------------
+study_participants = list(
+  c('Participant 1', 'Dube_Philiani_1982-09-24_Repeatability')
+)
+study_assessors = list(
+  c('A1', 'JAV'),
+  c('A2', 'JON'),
+  c('A3', 'LEWIS')
+)
+study_sessions = list(
+  c('Session 1', '01'),
+  c('Session 2', '02'),
+  c('Session 3', '03'),
+  c('Session 4', '04')
+)
+study_parameters = list(
+  c('Foot pitch', 'Foot Pitch Angles', 'X', -80, 30, 20),
+  c('Foot progression', 'Foot Pitch Angles', 'Z', -25, 25, 10),
+  c('Ankle dorsiflexion', 'Ankle Angles', 'X', -25, 15, 5),
+  c('Ankle inversion', 'Ankle Angles', 'Y', 0, 30, 5),
+  c('Knee flexion', 'Knee Angles', 'X', -15, 70, 10),
+  c('Knee adduction', 'Knee Angles', 'Y', -15, 10, 5),
+  c('Knee rotation', 'Knee Angles', 'Z', -22, 12, 10),
+  c('Hip flexion', 'Hip Angles', 'X', -20, 40, 10),
+  c('Hip adduction', 'Hip Angles', 'Y', -15, 10, 5),
+  c('Hip rotation', 'Hip Angles', 'Z', -30, 10, 10),
+  c('Pelvic tilt', 'Pelvic Angles', 'X', 0, 20, 5),
+  c('Pelvic obliquity', 'Pelvic Angles', 'Y', -6, 6, 2),
+  c('Pelvic rotation', 'Pelvic Angles', 'Z', -10, 12, 5)
+)
+
+## Load functions - make sure this points to the repeatability functions file
+source('/Users/erik/Projects/gait-repeatability/repeatability_functions.R')
+
+# --------------------------------------------------------------------
+
+# Don't edit from here onwards!
+
+######################################################################
+dir.create('results')
+```
+
+```{r data_sorting, results='asis'}
+main_summary()
+sorted_data <- main_sorting(study_sides)
+```
+
+```{r main_analysis, results='asis', fig.width=9, fig.height=11.5}
+grp_df <- main_analysis_latex(sorted_data, study_parameters, study_sides, study_sessions, study_assessors)
+```
+  
+```{r plot_GRP, results='asis', fig.width=9, fig.height=4}
+main_grp_latex(grp_df, study_assessors)
+```
