@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = FALSE, message=FALSE, warning=FALSE)
 ## -------------------- INSTRUCTIONS ----------------------------------
 
 # 1. Create directory for study and write file path in brackets below
-setwd('/Users/erik/Projects/gait-repeatability')
+setwd('<filepath>/gait-repeatability')
 
 # 2. Move this script into new study directory
 # 3. Edit title, author and date in lines 2-4 above. Do not alter any other code above.
@@ -60,7 +60,7 @@ study_parameters = list(
 )
 
 ## Load functions - make sure this points to the repeatability functions file
-source('/Users/erik/Projects/gait-repeatability/repeatability_functions.R')
+source('<filepath>/repeatability_functions.R')
 
 # --------------------------------------------------------------------
 
