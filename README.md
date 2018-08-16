@@ -16,12 +16,12 @@ This file should be saved in the master directory and not copy and pasted into t
 
 ### Installation steps  
 1. Save all files from this repository into a new master directory
-2. Change the filepath at the end of the setting section in the ```repeatability_script_pdf.Rmd``` and ```repeatability_script_html.Rmd``` files so that it directs to the ```repeatability_function.R``` file in your master directory and save.  
+2. Change the ```load functions``` filepath at the end of the setting section in the ```repeatability_script_pdf.Rmd``` and ```repeatability_script_html.Rmd``` files so that it directs to the ```repeatability_function.R``` file in your master directory and save.  
 These files can now be kept as they are as a master copy, follow the instuctions below for each project
 
 ### Dependencies
 * RStudio (or pandoc installed, for rendering the .Rmd file)
-* R version ??????
+* R
 * R packages:
   - ggplot2 (v3.4.0)
   - reshape2 (v1.4.3)
@@ -39,9 +39,13 @@ These files can now be kept as they are as a master copy, follow the instuctions
 5. Once setting have been checked, save both files and click 'Knit' in RStudio from within the script file
 
 ## Report settings
-```working_directory``` -  
-```study_sides``` -  
-```study_participants``` -  
-```study_assessors``` -  
-```study_sessions``` -   
-```study_parameters``` -  
+```working_directory``` - Full filepath to the current project.   
+```study_sides``` - Must include only 2 records - one left and one right. The first field must be either left or right, the second must be the filepath to the data for that side, relative to the working directory.  
+```study_participants``` - Can be as many participants as you want, provided they are within the dataset. You don't have to include all participants in the study. First field is the participant name as it will be in the report, the second is how the participant will be identified within the dataset.    
+```study_assessors``` - Can be as many assessors as you want, provided they are within the dataset. You don't have to include all assessors in the study. First field is the assessor name as it will be in the report, the second is how the assessor will be identified within the dataset.    
+```study_sessions``` - Can be as many sessions as you want, provided they are within the dataset. You don't have to include all sessions in the study.First field is the session name as it will be in the report, the second is how the session will be identified within the dataset.     
+```study_parameters``` - The parameters to be reported in the study. All possible parameters are included, it is recommended that, if you want to remove a parameter, you comment out a line by adding a # to the start of the line, rather than delete the whole line.  
+- Field 1: How the parameter will be named in the report  
+- Fields 2 & 3: Joint and plane. How the parameter is labelled in the data. Note that 'Left' and 'Right' will be added before the joint by the script, so there is no need to add this.  
+- Field 4 & 5: Y axis minimum and maximum values, respectively. Change if some of the graphs don't fit within the axes.
+- Field 6: Y axis increments, the gap between each Y axis label.
