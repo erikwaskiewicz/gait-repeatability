@@ -22,5 +22,5 @@ repeatability_script_pdf.pdf
 repeatability_script_html.html
 
 # Data
-raw_data
-results
+raw_data/
+results/
