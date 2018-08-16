@@ -24,3 +24,6 @@ repeatability_script_html.html
 # Data
 raw_data/
 results/
+
+# Misc folder
+archive/
